@@ -1,0 +1,20 @@
+:root {
+  --font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --line-height: 1.5;
+  --font-weight: 400;
+  --text-color: #213547;
+  --bg-color: #ffffff;
+  --link-hover-color: #28a745;
+  --button-bg: #3a3a3a;
+  --button-hover-bg: #28a745;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  line-height: var(--line-height);
+  font-weight: var(--font-weight);
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  background: #F5F5F5;
+}
