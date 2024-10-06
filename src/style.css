@@ -4,9 +4,12 @@
   --font-weight: 400;
   --text-color: #213547;
   --bg-color: #ffffff;
-  --link-hover-color: #28a745;
   --button-bg: #3a3a3a;
-  --button-hover-bg: #28a745;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
 }
 
 body {

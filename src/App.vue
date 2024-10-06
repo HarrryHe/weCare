@@ -17,6 +17,7 @@ onMounted(() => {
 
 const handleSignOut = () => {
   signOut(auth).then(() => {
+    alert("User Logged Out!");
     router.push("/");
   })
 };
@@ -73,10 +74,27 @@ const handleSignOut = () => {
     </nav>
 
     <router-view class="content"></router-view>
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <footer>
+      <p>Owlhacks Project</p>
+      <p>Powered by Bootstrap, Vue, Vite, Firebase, vue3-particles</p>
+      <p>Team: Jiacheng He, Jie Huang, Yan Huang ❤️</p>
+    </footer>
   </div>
 </template>
 
 <style scoped>
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
 .oleo-script-bold {
   font-family: "Oleo Script", system-ui;
   font-weight: 700;
@@ -87,6 +105,22 @@ const handleSignOut = () => {
 .content {
   margin-top: 3rem;
   padding: 2rem;
+  flex: 1;
+}
+
+footer {
+  background-color: #d2d3d7;
+  color: #213547;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+  position: relative;
+  width: 100%;
+  bottom: 0;
+}
+
+footer p {
+  margin: 0.3rem 0;
 }
 </style>
 

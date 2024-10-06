@@ -1,7 +1,8 @@
 <template>
     <div class="container-fluid">
+        <img src="/src/assets/undraw_blooming_re_2kc4.svg" width="300" height="200" style="display: block; margin: 0 auto;">
         <div class="card input-card">
-            <h2>Post Your New Diary</h2>
+            <h2>Post Your New Mood Diary</h2>
             <hr class="my-4">
             <textarea v-model="description" placeholder="Type here..."></textarea>
             <hr class="my-4">
@@ -12,7 +13,7 @@
                 </option>
             </select>
             <hr class="my-4">
-            <button class="postButton" @click="updateContent">Post!</button>
+            <button class="postButton" @click="updateContent">Let's Post!</button>
         </div>
         <div v-show="isDisplay" style="text-align: center;">
             <h3>🎉🎉🎉 Post Successfully! 🎉🎉🎉</h3>
@@ -20,13 +21,17 @@
         <hr class="my-4">
         <div v-if="diaries.length > 0">
             <div>
-                <h2 style="text-align: center;">Diary History</h2>
+                <h2 style="text-align: center;">Diary Record</h2>
+                <div class="overlay" v-if="activeCard !== null" @click="closeCard"></div>
                 <div>
-                    <div class= "card display-card" v-for="(entry, index) in diaries" :key="index">
-                    <p><strong>Date:</strong> {{ new Date(entry.Date).toLocaleString() }}</p>
-                    <p><strong>Content:</strong> {{ entry.Content }}</p>
-                    <p><strong>Mood:</strong> {{ entry.Mood }}</p>
-                    <p><strong>Name:</strong> {{ entry.Name }}</p>
+                    <div class= "card display-card" v-for="(entry, index) in sortedDiaries" :key="index" @click="expandCard(index)"
+                        :class="{ 'expanded-card': activeCard === index }">
+                        <p><strong>Name:</strong> {{ entry.Name }}</p>
+                        <p><strong>Date:</strong> {{ new Date(entry.Date).toLocaleString() }}</p>
+                        <hr class="my-4">
+                        <p :class="{ 'single-line': activeCard !== index, 'multi-line': activeCard === index }"><strong>Content:</strong> {{ entry.Content }}</p>
+                        <hr class="my-4">
+                        <p><strong>Mood:</strong> {{ entry.Mood }}</p>
                     </div>
                 </div>
             </div>
@@ -35,130 +40,177 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { setDoc, doc, arrayUnion, getDoc } from 'firebase/firestore'; // 导入 arrayUnion
-import { auth, db } from '../firebase'; // Firestore 实例
-import { onAuthStateChanged } from "firebase/auth"; // Firebase auth 实例
+    import { ref, onMounted, computed } from 'vue';
+    import { setDoc, doc, arrayUnion, getDoc } from 'firebase/firestore';
+    import { auth, db } from '../firebase';
+    import { onAuthStateChanged } from "firebase/auth";
 
-// 初始化数据
-const moods = ['😢', '😟', '😐', '😊', '😁'];
-const user = ref(null);
-const description = ref("");
-const selectedMood = ref('😐');
-const date = new Date();
-const diaries = ref([]);
-const isDisplay = ref(false);
+    const moods = ['😢', '😟', '😐', '😊', '😁'];
+    const user = ref(null);
+    const description = ref("");
+    const selectedMood = ref('😐');
+    const date = new Date();
+    const diaries = ref([]);
+    const isDisplay = ref(false);
+    const activeCard = ref(null);
+    const trackMood = ref([]);
 
-// 获取当前登录用户
-/*const getCurrentUser = () => {
-  return new Promise((resolve, reject) => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        resolve(currentUser); // 返回用户
-      } else {
-        reject("No user logged in"); // 无用户登录
-      }
-      unsubscribe(); // 停止监听，防止重复触发
+    const sortedDiaries = computed(() => {
+        return diaries.value.slice().sort((a, b) => b.Date - a.Date);
     });
-  });
-};*/
-onMounted(() => {
-    onAuthStateChanged(auth, async (currentUser) => {
-        if (currentUser) {
-        user.value = currentUser;
-        await fetchDiaries();
-        } else {
-        user.value = null;
-        console.log("No user is logged in");
-        }
+
+    onMounted(() => {
+        onAuthStateChanged(auth, async (currentUser) => {
+            if (currentUser) {
+                user.value = currentUser;
+                await fetchDiaries();
+
+            } else {
+            user.value = null;
+            console.log("No user is logged in");
+            }
+        });
     });
-});
 
-// 更新内容到 Firestore
-const updateContent = async () => {
-    try {
-        const currentUser = user.value//await getCurrentUser();
-        if (!currentUser) {
-        console.log("No user is logged in.");
-        return;
-    }
+    const updateContent = async () => {
 
-    const displayName = currentUser.displayName;
-
-    await setDoc(doc(db, 'user_records', currentUser.uid), {
-        Diary: arrayUnion({
-            Date: date.getTime(),
-            Content: description.value,
-            Mood: selectedMood.value,
-            Name: displayName
-        }),
-    }, { merge: true });
-
-    console.log("Diary entry added successfully!");
-    isDisplay.value = true;
-    setTimeout(() => {
-        isDisplay.value = false;
-    }, 3000);
-
-    } catch (error) {
-    console.error('Error updating content: ', error);
-    }
-};
-
-const fetchDiaries = async () => {
-    try {
-        const currentUser = user.value;
-
-        // 如果没有用户登录，直接返回
-        if (!currentUser) return;
-
-        // 获取 Firestore 中的用户文档
-        const docSnap = await getDoc(doc(db, 'user_records', currentUser.uid)); // 使用 getDoc 获取文档数据
-
-        // 如果文档存在，获取 `Diary` 字段，否则为空数组
-        if (docSnap.exists()) {
-            diaries.value = docSnap.exists() ? docSnap.data().Diary || [] : []; // 获取 Diary 数组
-        } else {
-            diaries.value = []; // 如果文档不存在，设置 diaries 为空数组
+        //test if user value exist
+        try {
+            const currentUser = user.value //await getCurrentUser();
+            if (!currentUser) {
+            console.log("No user is logged in.");
+            return;
         }
-    } catch (error) {
-        console.error("Error fetching diaries:", error);
-    }
-};
+
+        const displayName = currentUser.displayName;
+
+        await setDoc(doc(db, 'user_records', currentUser.uid), {
+            Diary: arrayUnion({
+                Date: date.getTime(),
+                Content: description.value,
+                Mood: selectedMood.value,
+                Name: displayName
+            }),
+
+        }, { merge: true });
+
+        console.log("Diary entry added successfully!");
+        description.value = "";
+        selectedMood.value = '😐';
+        isDisplay.value = true;
+        setTimeout(() => {
+            isDisplay.value = false;
+        }, 3000);
+
+        } catch (error) {
+        console.error('Error updating content: ', error);
+        }
+    };
+
+    const fetchDiaries = async () => {
+        try {
+            const currentUser = user.value;
+
+            if (!currentUser) return;
+
+            const docSnap = await getDoc(doc(db, 'user_records', currentUser.uid));
+
+            if (docSnap.exists()) {
+                diaries.value = docSnap.exists() ? docSnap.data().Diary || [] : [];
+                trackMood.value = docSnap.exists() ? docSnap.data().seven_day || [] : [];
+            } else {
+                diaries.value = [];
+            }
+        } catch (error) {
+            console.error("Error fetching diaries:", error);
+        }
+    };
+
+    //maximize the card
+    const expandCard = (index) => {
+        activeCard.value = index;
+    };
+
+    //closed the card
+    const closeCard = () => {
+        activeCard.value = null;
+    };
 </script>
 
-<style>
-
+<style scoped>
     .input-card {
         padding: 5rem;
         margin: 7rem;
-        margin-bottom: 5rem;
+        margin-top: 1rem;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         transition: box-shadow 0.3s ease, transform 0.3s ease;
+        background-color: rgb(156, 208, 187);
+    }
+
+    .input-card:hover {
+        background-color: rgb(141, 216, 167);
+        transition: transform 0.5s ease;
+        transform: scale(1.03);
     }
 
     .display-card {
-        margin: 7rem;
-        padding: 5rem;
+        margin: 5rem;
+        padding: 3rem;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         transition: box-shadow 0.3s ease, transform 0.3s ease;
-    }
-
-    .display-card p {
-        white-space: pre-wrap;
+        max-height: 80rem;
+        cursor: pointer;
     }
 
     .postButton {
+        display: relative;
+        margin: 0 auto;
+        width: 60%;
         border-radius: 5px;
+        margin-top: 15px;
     }
 
     .postButton:hover{
         transform: translateY(-5px);
-        transition: transform 0.5s ease-in-out;
+        transition: transform 0.3s ease-in-out;
     }
 
     .postButton:active {
         transform: translateY(3px);
     }
 
+    .expanded-card {
+        position: fixed;
+        top: 35%;
+        left: 40%;
+        transform: translate(-50%, -50%);
+        width: 80vw;
+        height: 90vh;
+        z-index: 1000;
+        background-color: white;
+        transition: all 0.3s ease;
+        overflow-y: auto;
+        cursor: pointer;
+    }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .single-line {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .multi-line {
+        white-space: pre-wrap;
+        overflow: visible;
+    }
 </style>

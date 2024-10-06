@@ -1,7 +1,7 @@
 <template>
     <div class="container-fluid">
         <h1 class="oleo-icon" v-bind:class="{ iconHoverClass:isIcon }" @mouseover="isIcon = true" @mouseleave="isIcon = false">weCare</h1>
-        <p class="p-class">It's okay to not be okay.</p>
+        <p class="p-class">Share Your Feelings, Empower Your Journey Every Day</p>
         <img src="/src/assets/undraw_love_it_heart_dxlp.svg" width="100" height="200" style="display: block; margin: 0 auto;">
     </div>
 </template>
@@ -29,6 +29,12 @@
 
 .iconHoverClass {
     color: #e6df88;
+}
+
+@media (max-width: 768px) {
+    .oleo-icon {
+        font-size: 6rem;
+    }
 }
 
 </style>
