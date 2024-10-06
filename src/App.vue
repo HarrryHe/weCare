@@ -2,6 +2,7 @@
 import {auth} from "./firebase"
 import {onMounted, ref} from "vue"
 import { onAuthStateChanged, signOut } from 'firebase/auth';
+import router from './router'
 
 const isLogin = ref(false);
 
@@ -18,7 +19,7 @@ onMounted(() => {
 const handleSignOut = () => {
   signOut(auth).then(() => {
     alert("User Logged Out!");
-    router.push("/");
+    router.push("/login");
   })
 };
 
@@ -93,6 +94,8 @@ const handleSignOut = () => {
 html, body {
   height: 100%;
   margin: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .oleo-script-bold {
@@ -114,9 +117,11 @@ footer {
   text-align: center;
   padding: 1rem;
   font-size: 0.9rem;
-  position: relative;
   width: 100%;
   bottom: 0;
+  left: 0;
+  position: relative;
+  margin-top: auto;
 }
 
 footer p {

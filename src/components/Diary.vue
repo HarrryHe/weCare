@@ -21,7 +21,7 @@
         <hr class="my-4">
         <div v-if="diaries.length > 0">
             <div>
-                <h2 style="text-align: center;">Diary Record</h2>
+                <h2 style="text-align: center;">Diary Card</h2>
                 <div class="overlay" v-if="activeCard !== null" @click="closeCard"></div>
                 <div>
                     <div class= "card display-card" v-for="(entry, index) in sortedDiaries" :key="index" @click="expandCard(index)"
@@ -182,7 +182,7 @@
     .expanded-card {
         position: fixed;
         top: 35%;
-        left: 40%;
+        left: 43.5%;
         transform: translate(-50%, -50%);
         width: 80vw;
         height: 90vh;
@@ -201,6 +201,7 @@
         height: 100%;
         background-color: rgba(0, 0, 0, 0.5);
         z-index: 999;
+        backdrop-filter: blur(10px);
     }
 
     .single-line {
@@ -213,4 +214,45 @@
         white-space: pre-wrap;
         overflow: visible;
     }
+
+    @media (max-width: 765px) {
+        .container-fluid {
+            padding: 1rem;
+        }
+
+        .input-card {
+            margin: 1rem;
+            padding: 2rem;
+        }
+
+        .display-card {
+            margin: 1rem;
+            padding: 1rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+        }
+
+        textarea, select {
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .postButton {
+            width: 100%;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+        }
+        
+
+        .expanded-card {
+            top: 45%;
+            left: 46%;
+            transform: translate(-50%, -50%);
+            width: 90vw;
+            height: 80vh;
+        }
+    }
+
 </style>
